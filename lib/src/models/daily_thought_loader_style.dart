@@ -11,6 +11,7 @@ class DailyThoughtLoaderStyle {
   const DailyThoughtLoaderStyle({
     this.backgroundColor,
     this.backgroundGradient,
+    this.backgroundImage,
     this.contentPadding,
     this.maxContentWidth = 560.0,
     this.textAlign = TextAlign.center,
@@ -21,6 +22,8 @@ class DailyThoughtLoaderStyle {
     this.showQuotationMark = true,
     this.quotationMarkColor,
     this.thoughtTextStyle,
+    this.thoughtUnderline = false,
+    this.thoughtUnderlineColor,
     this.authorTextStyle,
     this.showAuthorSeparator = true,
     this.authorSeparatorColor,
@@ -33,13 +36,35 @@ class DailyThoughtLoaderStyle {
     this.animateIn = true,
   });
 
-  /// Solid background colour. Ignored when [backgroundGradient] is set.
+  /// The default background colour when [backgroundColor] is not set: a warm
+  /// off-white that suits quotes and light logos.
+  static const Color defaultBackgroundColor = Color(0xFFF6F1EA);
+
+  /// Solid background colour. Defaults to [defaultBackgroundColor].
   ///
-  /// Defaults to `Theme.of(context).colorScheme.surface`.
+  /// A [backgroundGradient] paints over this, and a [backgroundImage] paints
+  /// over both.
   final Color? backgroundColor;
 
-  /// Background gradient. Takes precedence over [backgroundColor].
+  /// Background gradient, painted over [backgroundColor].
   final Gradient? backgroundGradient;
+
+  /// Background image, painted over the colour and gradient. Use
+  /// [DecorationImage.fit] (defaults to `BoxFit.cover`),
+  /// [DecorationImage.opacity] and [DecorationImage.colorFilter] to control
+  /// how it looks — e.g. a dark scrim so light text stays readable.
+  ///
+  /// ```dart
+  /// backgroundImage: const DecorationImage(
+  ///   image: AssetImage('assets/splash_bg.jpg'),
+  ///   fit: BoxFit.cover,
+  ///   colorFilter: ColorFilter.mode(Colors.black26, BlendMode.darken),
+  /// ),
+  /// ```
+  ///
+  /// For anything more elaborate (blur, animation, video), pass a
+  /// `background` widget to [DailyThoughtLoader] instead.
+  final DecorationImage? backgroundImage;
 
   /// Outer padding around the logo / quote / loader column.
   ///
@@ -82,6 +107,13 @@ class DailyThoughtLoaderStyle {
 
   /// Text style for the quote. Merged over the resolved default.
   final TextStyle? thoughtTextStyle;
+
+  /// Whether to draw an underline beneath the quote. Off by default.
+  final bool thoughtUnderline;
+
+  /// Colour of the quote underline when [thoughtUnderline] is `true`.
+  /// Defaults to the progress colour.
+  final Color? thoughtUnderlineColor;
 
   /// Text style for the author. Merged over the resolved default.
   final TextStyle? authorTextStyle;

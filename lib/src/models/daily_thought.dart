@@ -4,10 +4,7 @@ import 'package:flutter/foundation.dart';
 @immutable
 class DailyThought {
   /// Creates a daily thought.
-  const DailyThought({
-    required this.text,
-    required this.author,
-  });
+  const DailyThought({required this.text, required this.author});
 
   /// The text of the thought.
   final String text;

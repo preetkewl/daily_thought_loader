@@ -1,4 +1,4 @@
-## 0.1.3
+## 0.1.4
 
 **Redesigned the loader UI.** It is now a full-screen, three-band splash
 layout: optional logo pinned to the top, the thought vertically centred, and
@@ -6,13 +6,22 @@ the progress indicator pinned to the bottom. Content is centred within a
 `maxContentWidth` and scales up on tablets.
 
 * Defaults now resolve from the ambient `ThemeData` and screen size, so the
-  loader looks finished with no styling.
-* New style hooks: `backgroundColor`, `backgroundGradient`, `contentPadding`,
+  loader looks finished with no styling. The background defaults to a warm
+  off-white (`DailyThoughtLoaderStyle.defaultBackgroundColor`, `#F6F1EA`).
+* Background is fully customisable: `backgroundColor`, `backgroundGradient`,
+  `backgroundImage` (a `DecorationImage`), or a full-screen `background`
+  widget on the loader that overrides them all.
+* New style hooks: `backgroundColor`, `backgroundGradient`, `backgroundImage`,
+  `contentPadding`,
   `maxContentWidth`, `textAlign`, decorative opening quotation mark
   (`showQuotationMark` / `quotationMarkColor`), author accent rule
   (`showAuthorSeparator` / `authorSeparatorColor`), `progressBorderRadius`,
   `progressHandleInset`, `animateIn`, and `fontFamily` /
   `fontFamilyFallback` (applied to the quote, author, and quotation mark).
+* The quote is no longer underlined. The loader now provides its own
+  `Material`, so `Text` never shows the "missing Material" debug underline
+  when used without a `Scaffold`. Opt back in with `thoughtUnderline` /
+  `thoughtUnderlineColor`.
 * The progress track now has rounded caps; the handle rides in its own lane
   above the track and is inset so it never clips at 0% / 100%.
 * The quote fades and rises in on appearance (respects the platform

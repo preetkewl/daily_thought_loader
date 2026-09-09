@@ -109,6 +109,47 @@ The default handle is a small glowing dot in the progress colour. The handle
 rides in its own lane above the track and is inset so it never clips at the
 ends.
 
+## Background
+
+By default the loader paints a warm off-white (`#F6F1EA`). Override it with a
+colour, a gradient, an image, or replace it entirely with a widget.
+
+```dart
+// Solid colour
+style: DailyThoughtLoaderStyle(backgroundColor: Color(0xFFF2E8DC)),
+
+// Gradient
+style: DailyThoughtLoaderStyle(
+  backgroundGradient: LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFF6F1EA), Color(0xFFE7D8C6)],
+  ),
+),
+
+// Image (with a scrim so text stays readable)
+style: DailyThoughtLoaderStyle(
+  backgroundImage: DecorationImage(
+    image: AssetImage('assets/splash_bg.jpg'),
+    fit: BoxFit.cover,
+    colorFilter: ColorFilter.mode(Colors.black26, BlendMode.darken),
+  ),
+),
+```
+
+For anything the style can't express — an animated gradient, a blurred photo,
+a video, a `Stack` of layers — pass a `background` widget on the loader
+itself. It fills the screen behind everything and overrides the style's
+background:
+
+```dart
+DailyThoughtLoader(
+  thoughts: thoughts,
+  duration: const Duration(seconds: 5),
+  background: Image.asset('assets/splash_bg.jpg', fit: BoxFit.cover),
+)
+```
+
 ## Custom Logo
 
 An optional widget pinned to the top of the screen:
@@ -169,6 +210,7 @@ If a thought has no author, pass an empty string.
 | `duration` | `Duration` | How long the chosen thought is shown before `onComplete`. |
 | `progressWidget` | `Widget?` | Handle that moves along the progress bar. Defaults to a glowing dot. |
 | `logoWidget` | `Widget?` | Optional widget pinned to the top. |
+| `background` | `Widget?` | Full-screen widget behind everything. Overrides the style's background. |
 | `style` | `DailyThoughtLoaderStyle` | Visual styling configuration. |
 | `onComplete` | `VoidCallback?` | Called once (post-frame) when the duration elapses. |
 | `random` | `Random?` | Random source for the pick. Defaults to `Random()`. |
@@ -179,8 +221,9 @@ Controls the visual appearance of the loader. All fields are optional.
 
 | Property | Type | Default |
 |---|---|---|
-| `backgroundColor` | `Color?` | `colorScheme.surface` |
-| `backgroundGradient` | `Gradient?` | — (wins over `backgroundColor`) |
+| `backgroundColor` | `Color?` | `DailyThoughtLoaderStyle.defaultBackgroundColor` (warm off-white `#F6F1EA`) |
+| `backgroundGradient` | `Gradient?` | — (painted over `backgroundColor`) |
+| `backgroundImage` | `DecorationImage?` | — (painted over colour and gradient) |
 | `contentPadding` | `EdgeInsetsGeometry?` | responsive (larger on tablets) |
 | `maxContentWidth` | `double` | `560` |
 | `textAlign` | `TextAlign` | `TextAlign.center` |
@@ -191,6 +234,8 @@ Controls the visual appearance of the loader. All fields are optional.
 | `showQuotationMark` | `bool` | `true` |
 | `quotationMarkColor` | `Color?` | progress colour @ 18% |
 | `thoughtTextStyle` | `TextStyle?` | merged over resolved default |
+| `thoughtUnderline` | `bool` | `false` |
+| `thoughtUnderlineColor` | `Color?` | progress colour |
 | `authorTextStyle` | `TextStyle?` | merged over resolved default |
 | `showAuthorSeparator` | `bool` | `true` |
 | `authorSeparatorColor` | `Color?` | progress colour @ 60% |

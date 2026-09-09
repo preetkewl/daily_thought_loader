@@ -7,20 +7,14 @@ import 'package:daily_thought_loader/daily_thought_loader.dart';
 void main() {
   group('DailyThought', () {
     test('stores text and author', () {
-      const thought = DailyThought(
-        text: 'Stay curious.',
-        author: 'Unknown',
-      );
+      const thought = DailyThought(text: 'Stay curious.', author: 'Unknown');
 
       expect(thought.text, 'Stay curious.');
       expect(thought.author, 'Unknown');
     });
 
     test('allows an empty author', () {
-      const thought = DailyThought(
-        text: 'Keep going.',
-        author: '',
-      );
+      const thought = DailyThought(text: 'Keep going.', author: '');
 
       expect(thought.text, 'Keep going.');
       expect(thought.author, '');
@@ -60,12 +54,16 @@ void main() {
       final shownFirst = find.text('First thought').evaluate().isNotEmpty;
       final shownSecond = find.text('Second thought').evaluate().isNotEmpty;
 
-      expect(shownFirst ^ shownSecond, isTrue,
-          reason: 'exactly one thought should be displayed');
+      expect(
+        shownFirst ^ shownSecond,
+        isTrue,
+        reason: 'exactly one thought should be displayed',
+      );
     });
 
-    testWidgets('does not advance to another thought after the duration',
-        (tester) async {
+    testWidgets('does not advance to another thought after the duration', (
+      tester,
+    ) async {
       const thoughts = [
         DailyThought(text: 'First thought', author: 'Author 1'),
         DailyThought(text: 'Second thought', author: 'Author 2'),
@@ -90,7 +88,9 @@ void main() {
       expect(find.text('Second thought').evaluate().isNotEmpty, !firstShown);
     });
 
-    testWidgets('uses a seeded Random for a deterministic pick', (tester) async {
+    testWidgets('uses a seeded Random for a deterministic pick', (
+      tester,
+    ) async {
       const thoughts = [
         DailyThought(text: 'A', author: ''),
         DailyThought(text: 'B', author: ''),
@@ -143,7 +143,9 @@ void main() {
       expect(indicator.value, closeTo(1.0, 0.01));
     });
 
-    testWidgets('hides the author row when the author is empty', (tester) async {
+    testWidgets('hides the author row when the author is empty', (
+      tester,
+    ) async {
       const thoughts = [DailyThought(text: 'No attribution', author: '')];
 
       await tester.pumpWidget(
@@ -191,10 +193,7 @@ void main() {
 
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(
-        find.bySemanticsLabel('Loading'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Loading'), findsOneWidget);
     });
 
     testWidgets('applies custom progress height', (tester) async {
@@ -226,8 +225,14 @@ void main() {
             thoughts: thoughts,
             duration: Duration(seconds: 1),
             style: DailyThoughtLoaderStyle(
-              thoughtTextStyle: TextStyle(fontSize: 40, color: Color(0xFF00FF00)),
-              authorTextStyle: TextStyle(fontSize: 11, color: Color(0xFF0000FF)),
+              thoughtTextStyle: TextStyle(
+                fontSize: 40,
+                color: Color(0xFF00FF00),
+              ),
+              authorTextStyle: TextStyle(
+                fontSize: 11,
+                color: Color(0xFF0000FF),
+              ),
             ),
           ),
         ),
@@ -242,6 +247,90 @@ void main() {
       expect(quote.style!.fontWeight, FontWeight.w600);
       expect(author.style!.fontSize, 11);
       expect(author.style!.color, const Color(0xFF0000FF));
+    });
+
+    testWidgets('paints the default warm background', (tester) async {
+      const thoughts = [DailyThought(text: 'Test thought', author: 'Author')];
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: DailyThoughtLoader(
+            thoughts: thoughts,
+            duration: Duration(seconds: 1),
+          ),
+        ),
+      );
+
+      final decorated = tester.widgetList<DecoratedBox>(
+        find.byType(DecoratedBox),
+      );
+      expect(
+        decorated.any(
+          (d) =>
+              d.decoration is BoxDecoration &&
+              (d.decoration as BoxDecoration).color ==
+                  DailyThoughtLoaderStyle.defaultBackgroundColor,
+        ),
+        isTrue,
+      );
+    });
+
+    testWidgets('uses a custom background widget when provided', (
+      tester,
+    ) async {
+      const bgKey = Key('bg');
+      const thoughts = [DailyThought(text: 'Test thought', author: 'Author')];
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: DailyThoughtLoader(
+            thoughts: thoughts,
+            duration: Duration(seconds: 1),
+            background: ColoredBox(key: bgKey, color: Color(0xFF123456)),
+          ),
+        ),
+      );
+
+      expect(find.byKey(bgKey), findsOneWidget);
+    });
+
+    testWidgets('does not underline the quote by default', (tester) async {
+      const thoughts = [DailyThought(text: 'Test thought', author: 'Author')];
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: DailyThoughtLoader(
+            thoughts: thoughts,
+            duration: Duration(seconds: 1),
+          ),
+        ),
+      );
+
+      expect(
+        tester.widget<Text>(find.text('Test thought')).style!.decoration,
+        anyOf(isNull, TextDecoration.none),
+      );
+    });
+
+    testWidgets('underlines the quote when thoughtUnderline is true', (
+      tester,
+    ) async {
+      const thoughts = [DailyThought(text: 'Test thought', author: 'Author')];
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: DailyThoughtLoader(
+            thoughts: thoughts,
+            duration: Duration(seconds: 1),
+            style: DailyThoughtLoaderStyle(thoughtUnderline: true),
+          ),
+        ),
+      );
+
+      expect(
+        tester.widget<Text>(find.text('Test thought')).style!.decoration,
+        TextDecoration.underline,
+      );
     });
 
     testWidgets('applies fontFamily to quote and author', (tester) async {
