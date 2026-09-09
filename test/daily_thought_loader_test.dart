@@ -81,13 +81,13 @@ void main() {
         ),
       );
 
-      final textFinder = find.byType(Text);
-      final shown = tester.widget<Text>(textFinder.first).data;
+      final firstShown = find.text('First thought').evaluate().isNotEmpty;
 
       await tester.pump(const Duration(milliseconds: 1001));
       await tester.pump(const Duration(seconds: 2));
 
-      expect(tester.widget<Text>(find.byType(Text).first).data, shown);
+      expect(find.text('First thought').evaluate().isNotEmpty, firstShown);
+      expect(find.text('Second thought').evaluate().isNotEmpty, !firstShown);
     });
 
     testWidgets('uses a seeded Random for a deterministic pick', (tester) async {
@@ -151,6 +151,7 @@ void main() {
           home: DailyThoughtLoader(
             thoughts: thoughts,
             duration: Duration(seconds: 1),
+            style: DailyThoughtLoaderStyle(showQuotationMark: false),
           ),
         ),
       );
@@ -174,10 +175,9 @@ void main() {
       );
 
       expect(find.byKey(progressKey), findsOneWidget);
-      expect(find.byIcon(Icons.circle), findsNothing);
     });
 
-    testWidgets('uses the default progress widget', (tester) async {
+    testWidgets('exposes loading progress via semantics', (tester) async {
       const thoughts = [DailyThought(text: 'Test thought', author: 'Author')];
 
       await tester.pumpWidget(
@@ -189,7 +189,12 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.circle), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(
+        find.bySemanticsLabel('Loading'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('applies custom progress height', (tester) async {
@@ -214,8 +219,6 @@ void main() {
 
     testWidgets('applies custom thought and author styles', (tester) async {
       const thoughts = [DailyThought(text: 'Test thought', author: 'Author')];
-      const thoughtStyle = TextStyle(fontSize: 24);
-      const authorStyle = TextStyle(fontSize: 14);
 
       await tester.pumpWidget(
         const MaterialApp(
@@ -223,18 +226,22 @@ void main() {
             thoughts: thoughts,
             duration: Duration(seconds: 1),
             style: DailyThoughtLoaderStyle(
-              thoughtTextStyle: thoughtStyle,
-              authorTextStyle: authorStyle,
+              thoughtTextStyle: TextStyle(fontSize: 40, color: Color(0xFF00FF00)),
+              authorTextStyle: TextStyle(fontSize: 11, color: Color(0xFF0000FF)),
             ),
           ),
         ),
       );
 
-      final textWidgets =
-          tester.widgetList<Text>(find.byType(Text)).toList();
+      final quote = tester.widget<Text>(find.text('Test thought'));
+      final author = tester.widget<Text>(find.text('Author'));
 
-      expect(textWidgets.any((text) => text.style == thoughtStyle), isTrue);
-      expect(textWidgets.any((text) => text.style == authorStyle), isTrue);
+      // Custom values win, resolved defaults fill the rest.
+      expect(quote.style!.fontSize, 40);
+      expect(quote.style!.color, const Color(0xFF00FF00));
+      expect(quote.style!.fontWeight, FontWeight.w600);
+      expect(author.style!.fontSize, 11);
+      expect(author.style!.color, const Color(0xFF0000FF));
     });
 
     testWidgets('calls onComplete once after the duration', (tester) async {

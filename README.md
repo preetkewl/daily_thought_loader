@@ -10,13 +10,28 @@ completion callback fires so you can move on to the next screen.
 ## Features
 
 - Displays one random thought from the provided list.
+- Full-screen three-band layout: logo on top, thought centred, progress at the bottom.
 - Configurable display duration.
-- Animated `0%` to `100%` progress bar with a widget that moves along it.
-- Optional custom logo widget.
-- Customizable progress bar appearance and thought/author text styles.
-- `onComplete` callback fired once when the duration elapses.
+- Animated `0%` to `100%` progress bar with rounded caps and a handle that rides along it.
+- Sensible defaults resolved from your `ThemeData`; scales up on tablets.
+- Deep styling hooks: background colour/gradient, padding, max width, text alignment, decorative quotation mark, author accent rule, and more.
+- Quote fades and rises in on appearance (respects reduced-motion).
+- `onComplete` callback fired once (post-frame) when the duration elapses.
 - Injectable `Random` for deterministic tests.
-- Works as a normal composable Flutter widget.
+
+## Layout
+
+```
+        ┌───────────────────────────┐
+        │           logo            │  logoWidget (optional)
+        │                           │
+        │            “              │
+        │   "the chosen thought"    │  one random entry, centred
+        │        — AUTHOR           │
+        │                           │
+        │   ●━━━━━━━━━━━━━━━━━━━━    │  progress (pinned to bottom)
+        └───────────────────────────┘
+```
 
 ## Installation
 
@@ -24,7 +39,7 @@ Add `daily_thought_loader` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  daily_thought_loader: ^0.1.0
+  daily_thought_loader: ^0.2.0
 ```
 
 Then run:
@@ -90,20 +105,19 @@ DailyThoughtLoader(
 )
 ```
 
-The widget moves horizontally above the progress bar as the progress changes.
+The default handle is a small glowing dot in the progress colour. The handle
+rides in its own lane above the track and is inset so it never clips at the
+ends.
 
 ## Custom Logo
 
-An optional widget can be displayed below the progress section:
+An optional widget pinned to the top of the screen:
 
 ```dart
 DailyThoughtLoader(
   thoughts: thoughts,
   duration: const Duration(seconds: 5),
-  logoWidget: Image.asset(
-    'assets/logo.png',
-    width: 100,
-  ),
+  logoWidget: Image.asset('assets/logo.png', width: 120),
 )
 ```
 
@@ -111,27 +125,25 @@ The loader does not require a logo.
 
 ## Styling
 
-Use `DailyThoughtLoaderStyle` to customize the appearance:
+Everything is optional — unset values resolve from `Theme.of(context)` and the
+screen size. Override only what you need:
 
 ```dart
 DailyThoughtLoader(
   thoughts: thoughts,
   duration: const Duration(seconds: 5),
-  style: const DailyThoughtLoaderStyle(
-    progressHeight: 6,
-    progressBackgroundColor: Colors.grey,
-    progressColor: Colors.blue,
-    progressSectionHeight: 50,
-    thoughtTextStyle: TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
+  style: DailyThoughtLoaderStyle(
+    backgroundGradient: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFF6F1EA), Color(0xFFEFE6DA)],
     ),
-    authorTextStyle: TextStyle(
-      fontSize: 14,
-      fontStyle: FontStyle.italic,
-    ),
-    thoughtSpacing: 12,
-    logoSpacing: 24,
+    progressColor: const Color(0xFFF39B2D),
+    maxContentWidth: 600,
+    textAlign: TextAlign.center,
+    thoughtTextStyle: const TextStyle(fontWeight: FontWeight.w700),
+    authorTextStyle: const TextStyle(letterSpacing: 1.6),
+    showQuotationMark: true,
   ),
 )
 ```
@@ -155,26 +167,38 @@ If a thought has no author, pass an empty string.
 |---|---|---|
 | `thoughts` | `List<DailyThought>` | Pool to pick from. One entry is chosen at random. If empty, nothing renders and `onComplete` is not called. |
 | `duration` | `Duration` | How long the chosen thought is shown before `onComplete`. |
-| `progressWidget` | `Widget` | Widget displayed above and moving with the progress bar. |
-| `logoWidget` | `Widget?` | Optional widget displayed below the progress section. |
+| `progressWidget` | `Widget?` | Handle that moves along the progress bar. Defaults to a glowing dot. |
+| `logoWidget` | `Widget?` | Optional widget pinned to the top. |
 | `style` | `DailyThoughtLoaderStyle` | Visual styling configuration. |
 | `onComplete` | `VoidCallback?` | Called once (post-frame) when the duration elapses. |
 | `random` | `Random?` | Random source for the pick. Defaults to `Random()`. |
 
 ### `DailyThoughtLoaderStyle`
 
-Controls the visual appearance of the loader.
+Controls the visual appearance of the loader. All fields are optional.
 
-Available properties:
-
-- `progressHeight`
-- `progressBackgroundColor`
-- `progressColor`
-- `progressSectionHeight`
-- `thoughtTextStyle`
-- `authorTextStyle`
-- `thoughtSpacing`
-- `logoSpacing`
+| Property | Type | Default |
+|---|---|---|
+| `backgroundColor` | `Color?` | `colorScheme.surface` |
+| `backgroundGradient` | `Gradient?` | — (wins over `backgroundColor`) |
+| `contentPadding` | `EdgeInsetsGeometry?` | responsive (larger on tablets) |
+| `maxContentWidth` | `double` | `560` |
+| `textAlign` | `TextAlign` | `TextAlign.center` |
+| `logoSpacing` | `double` | `32` |
+| `thoughtSpacing` | `double` | `20` |
+| `showQuotationMark` | `bool` | `true` |
+| `quotationMarkColor` | `Color?` | progress colour @ 18% |
+| `thoughtTextStyle` | `TextStyle?` | merged over resolved default |
+| `authorTextStyle` | `TextStyle?` | merged over resolved default |
+| `showAuthorSeparator` | `bool` | `true` |
+| `authorSeparatorColor` | `Color?` | progress colour @ 60% |
+| `progressHeight` | `double` | `6` |
+| `progressColor` | `Color?` | `colorScheme.primary` |
+| `progressBackgroundColor` | `Color?` | progress colour @ 15% |
+| `progressBorderRadius` | `BorderRadiusGeometry?` | fully rounded |
+| `progressSectionHeight` | `double` | `36` (handle lane) |
+| `progressHandleInset` | `double` | `20` |
+| `animateIn` | `bool` | `true` |
 
 ## License
 

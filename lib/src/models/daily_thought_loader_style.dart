@@ -1,43 +1,111 @@
 import 'package:flutter/material.dart';
 
 /// Defines the visual styling for [DailyThoughtLoader].
+///
+/// Every value is optional. Anything left `null` is resolved from the ambient
+/// [ThemeData] and the screen size (phone vs. tablet) at build time, so the
+/// defaults look intentional without any configuration.
 @immutable
 class DailyThoughtLoaderStyle {
   /// Creates a style configuration for [DailyThoughtLoader].
   const DailyThoughtLoaderStyle({
-    this.progressHeight = 4.0,
-    this.progressBackgroundColor,
-    this.progressColor,
-    this.progressSectionHeight = 48.0,
+    this.backgroundColor,
+    this.backgroundGradient,
+    this.contentPadding,
+    this.maxContentWidth = 560.0,
+    this.textAlign = TextAlign.center,
+    this.logoSpacing = 32.0,
+    this.thoughtSpacing = 20.0,
+    this.showQuotationMark = true,
+    this.quotationMarkColor,
     this.thoughtTextStyle,
     this.authorTextStyle,
-    this.thoughtSpacing = 8.0,
-    this.logoSpacing = 24.0,
+    this.showAuthorSeparator = true,
+    this.authorSeparatorColor,
+    this.progressHeight = 6.0,
+    this.progressColor,
+    this.progressBackgroundColor,
+    this.progressBorderRadius,
+    this.progressSectionHeight = 36.0,
+    this.progressHandleInset = 20.0,
+    this.animateIn = true,
   });
 
-  /// The height of the progress bar.
-  final double progressHeight;
-
-  /// The background color of the progress bar.
-  final Color? progressBackgroundColor;
-
-  /// The color of the progress indicator.
-  final Color? progressColor;
-
-  /// The total height allocated to the progress section.
+  /// Solid background colour. Ignored when [backgroundGradient] is set.
   ///
-  /// This includes the space required by the moving progress widget.
-  final double progressSectionHeight;
+  /// Defaults to `Theme.of(context).colorScheme.surface`.
+  final Color? backgroundColor;
 
-  /// The text style used for the thought.
-  final TextStyle? thoughtTextStyle;
+  /// Background gradient. Takes precedence over [backgroundColor].
+  final Gradient? backgroundGradient;
 
-  /// The text style used for the author.
-  final TextStyle? authorTextStyle;
+  /// Outer padding around the logo / quote / loader column.
+  ///
+  /// Defaults to a responsive value (larger on tablets).
+  final EdgeInsetsGeometry? contentPadding;
 
-  /// The vertical spacing between thought content and the progress section.
+  /// Maximum width of the content column. Keeps line length readable on
+  /// tablets. The column is centred horizontally within the available space.
+  final double maxContentWidth;
+
+  /// Horizontal alignment of the quote and author text.
+  final TextAlign textAlign;
+
+  /// Vertical gap between the logo and the quote area.
+  final double logoSpacing;
+
+  /// Vertical gap between the quote and the author line.
   final double thoughtSpacing;
 
-  /// The vertical spacing between the progress section and the logo.
-  final double logoSpacing;
+  /// Whether to draw the large decorative opening quotation mark above the
+  /// quote.
+  final bool showQuotationMark;
+
+  /// Colour of the decorative quotation mark.
+  ///
+  /// Defaults to the progress colour at low opacity.
+  final Color? quotationMarkColor;
+
+  /// Text style for the quote. Merged over the resolved default.
+  final TextStyle? thoughtTextStyle;
+
+  /// Text style for the author. Merged over the resolved default.
+  final TextStyle? authorTextStyle;
+
+  /// Whether to draw a short accent rule beside the author name.
+  final bool showAuthorSeparator;
+
+  /// Colour of the author accent rule. Defaults to the progress colour.
+  final Color? authorSeparatorColor;
+
+  /// Thickness of the progress track.
+  final double progressHeight;
+
+  /// Colour of the progress fill (and, by default, the accents).
+  ///
+  /// Defaults to `Theme.of(context).colorScheme.primary`.
+  final Color? progressColor;
+
+  /// Colour of the progress track behind the fill.
+  ///
+  /// Defaults to the progress colour at low opacity.
+  final Color? progressBackgroundColor;
+
+  /// Corner radius of the progress track and fill.
+  ///
+  /// Defaults to fully rounded caps (`progressHeight / 2`).
+  final BorderRadiusGeometry? progressBorderRadius;
+
+  /// Height of the lane above the track in which the moving progress widget
+  /// (the "handle") travels.
+  final double progressSectionHeight;
+
+  /// Horizontal inset applied to the handle's travel so it never clips at
+  /// `0%` / `100%`.
+  final double progressHandleInset;
+
+  /// Whether the quote fades and rises in when it first appears (and whenever
+  /// a new thought is picked). Ignored when the platform requests reduced
+  /// motion.
+  final bool animateIn;
 }
