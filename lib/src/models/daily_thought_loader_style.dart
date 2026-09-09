@@ -14,6 +14,8 @@ class DailyThoughtLoaderStyle {
     this.contentPadding,
     this.maxContentWidth = 560.0,
     this.textAlign = TextAlign.center,
+    this.fontFamily,
+    this.fontFamilyFallback,
     this.logoSpacing = 32.0,
     this.thoughtSpacing = 20.0,
     this.showQuotationMark = true,
@@ -50,6 +52,18 @@ class DailyThoughtLoaderStyle {
 
   /// Horizontal alignment of the quote and author text.
   final TextAlign textAlign;
+
+  /// Font family applied to the quote, the author, and the decorative
+  /// quotation mark.
+  ///
+  /// Individual [thoughtTextStyle] / [authorTextStyle] values still win, so
+  /// you can override the family for one of them. To use a family bundled by
+  /// another package, prefix it, e.g. `packages/my_fonts/Lora`.
+  final String? fontFamily;
+
+  /// Ordered fallback families used when a glyph is missing from
+  /// [fontFamily].
+  final List<String>? fontFamilyFallback;
 
   /// Vertical gap between the logo and the quote area.
   final double logoSpacing;

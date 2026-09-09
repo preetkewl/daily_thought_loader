@@ -184,6 +184,8 @@ Controls the visual appearance of the loader. All fields are optional.
 | `contentPadding` | `EdgeInsetsGeometry?` | responsive (larger on tablets) |
 | `maxContentWidth` | `double` | `560` |
 | `textAlign` | `TextAlign` | `TextAlign.center` |
+| `fontFamily` | `String?` | inherit (applies to quote, author, quote mark) |
+| `fontFamilyFallback` | `List<String>?` | — |
 | `logoSpacing` | `double` | `32` |
 | `thoughtSpacing` | `double` | `20` |
 | `showQuotationMark` | `bool` | `true` |

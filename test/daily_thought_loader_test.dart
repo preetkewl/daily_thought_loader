@@ -244,6 +244,29 @@ void main() {
       expect(author.style!.color, const Color(0xFF0000FF));
     });
 
+    testWidgets('applies fontFamily to quote and author', (tester) async {
+      const thoughts = [DailyThought(text: 'Test thought', author: 'Author')];
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: DailyThoughtLoader(
+            thoughts: thoughts,
+            duration: Duration(seconds: 1),
+            style: DailyThoughtLoaderStyle(fontFamily: 'Lora'),
+          ),
+        ),
+      );
+
+      expect(
+        tester.widget<Text>(find.text('Test thought')).style!.fontFamily,
+        'Lora',
+      );
+      expect(
+        tester.widget<Text>(find.text('Author')).style!.fontFamily,
+        'Lora',
+      );
+    });
+
     testWidgets('calls onComplete once after the duration', (tester) async {
       var completionCount = 0;
       const thoughts = [DailyThought(text: 'Only thought', author: 'Author')];

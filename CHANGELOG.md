@@ -1,4 +1,4 @@
-## 0.1.2
+## 0.1.3
 
 **Redesigned the loader UI.** It is now a full-screen, three-band splash
 layout: optional logo pinned to the top, the thought vertically centred, and
@@ -11,7 +11,8 @@ the progress indicator pinned to the bottom. Content is centred within a
   `maxContentWidth`, `textAlign`, decorative opening quotation mark
   (`showQuotationMark` / `quotationMarkColor`), author accent rule
   (`showAuthorSeparator` / `authorSeparatorColor`), `progressBorderRadius`,
-  `progressHandleInset`, and `animateIn`.
+  `progressHandleInset`, `animateIn`, and `fontFamily` /
+  `fontFamilyFallback` (applied to the quote, author, and quotation mark).
 * The progress track now has rounded caps; the handle rides in its own lane
   above the track and is inset so it never clips at 0% / 100%.
 * The quote fades and rises in on appearance (respects the platform
