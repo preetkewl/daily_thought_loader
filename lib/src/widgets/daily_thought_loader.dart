@@ -3,7 +3,19 @@ import 'package:flutter/material.dart';
 import '../models/daily_thought.dart';
 import '../models/daily_thought_loader_style.dart';
 
+/// Displays a sequence of daily thoughts with a timed progress indicator.
+///
+/// Each thought is displayed for [duration]. When the duration completes,
+/// the loader advances to the next thought and resets the progress animation.
+///
+/// After the final thought completes, [onComplete] is called once.
+///
+/// The [progressWidget] is positioned above the progress bar and moves
+/// horizontally with the progress value.
+///
+/// An optional [logoWidget] can be displayed below the progress section.
 class DailyThoughtLoader extends StatefulWidget {
+  /// Creates a daily thought loader.
   const DailyThoughtLoader({
     super.key,
     required this.thoughts,
@@ -17,11 +29,29 @@ class DailyThoughtLoader extends StatefulWidget {
     this.onComplete,
   });
 
-  final Widget? logoWidget;
+  /// The thoughts to display in sequence.
+  ///
+  /// The list is treated as immutable by the loader. Provide a new list
+  /// when replacing the sequence of thoughts.
   final List<DailyThought> thoughts;
+
+  /// The amount of time each thought remains visible.
+  ///
+  /// The same duration is used for every thought.
   final Duration duration;
+
+  /// The widget displayed above the progress bar.
+  ///
+  /// Its horizontal position follows the current progress value.
   final Widget progressWidget;
+
+  /// An optional widget displayed below the progress section.
+  final Widget? logoWidget;
+
+  /// Controls the visual appearance of the loader.
   final DailyThoughtLoaderStyle style;
+
+  /// Called once after the final thought has completed.
   final VoidCallback? onComplete;
 
   @override
@@ -39,7 +69,10 @@ class _DailyThoughtLoaderState extends State<DailyThoughtLoader>
   void initState() {
     super.initState();
 
-    _controller = AnimationController(vsync: this, duration: widget.duration);
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.duration,
+    );
 
     _controller.addStatusListener(_handleAnimationStatus);
 
@@ -58,13 +91,35 @@ class _DailyThoughtLoaderState extends State<DailyThoughtLoader>
         _currentThoughtIndex++;
       });
 
-      _controller.reset();
-      _controller.forward();
+      _controller
+        ..reset()
+        ..forward();
+
       return;
     }
 
     _isCompleted = true;
     widget.onComplete?.call();
+  }
+
+  @override
+  void didUpdateWidget(covariant DailyThoughtLoader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.thoughts != widget.thoughts) {
+      if (widget.thoughts.isEmpty) {
+        _controller.stop();
+        _currentThoughtIndex = 0;
+        _isCompleted = false;
+      } else {
+        _currentThoughtIndex = 0;
+        _isCompleted = false;
+
+        _controller
+          ..reset()
+          ..forward();
+      }
+    }
   }
 
   @override
@@ -90,10 +145,20 @@ class _DailyThoughtLoaderState extends State<DailyThoughtLoader>
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(thought.text, style: widget.style.thoughtTextStyle),
-            SizedBox(height: widget.style.thoughtSpacing),
-            Text(thought.author, style: widget.style.authorTextStyle),
-            SizedBox(height: widget.style.thoughtSpacing),
+            Text(
+              thought.text,
+              style: widget.style.thoughtTextStyle,
+            ),
+            SizedBox(
+              height: widget.style.thoughtSpacing,
+            ),
+            Text(
+              thought.author,
+              style: widget.style.authorTextStyle,
+            ),
+            SizedBox(
+              height: widget.style.thoughtSpacing,
+            ),
             _ProgressSection(
               progress: _controller.value,
               progressWidget: widget.progressWidget,
@@ -109,30 +174,6 @@ class _DailyThoughtLoaderState extends State<DailyThoughtLoader>
         );
       },
     );
-  }
-
-  @override
-  void didUpdateWidget(covariant DailyThoughtLoader oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.duration != widget.duration) {
-      _controller.duration = widget.duration;
-    }
-
-    if (oldWidget.thoughts != widget.thoughts) {
-      if (widget.thoughts.isEmpty) {
-        _controller.stop();
-        _currentThoughtIndex = 0;
-        _isCompleted = false;
-      } else {
-        _currentThoughtIndex = 0;
-        _isCompleted = false;
-
-        _controller
-          ..reset()
-          ..forward();
-      }
-    }
   }
 }
 
@@ -166,7 +207,10 @@ class _ProgressSection extends StatelessWidget {
             ),
           ),
           Align(
-            alignment: Alignment(progress * 2 - 1, -1),
+            alignment: Alignment(
+              progress * 2 - 1,
+              -1,
+            ),
             child: progressWidget,
           ),
         ],
