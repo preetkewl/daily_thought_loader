@@ -1,4 +1,4 @@
-## 0.2.0
+## 0.1.2
 
 **Redesigned the loader UI.** It is now a full-screen, three-band splash
 layout: optional logo pinned to the top, the thought vertically centred, and
