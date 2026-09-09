@@ -1,5 +1,5 @@
 name: daily_thought_loader
-description: A new Flutter package project.
+description: A customizable timed daily thought loading widget for Flutter.
 version: 0.0.1
 repository: https://github.com/preetkewl/daily_thought_loader
 
