@@ -1,19 +1,21 @@
 # daily_thought_loader
 
-A customizable timed daily thought loading widget for Flutter.
+A splash-style loading widget for Flutter.
 
-Display a sequence of thoughts with an animated progress bar, a moving progress widget, an optional logo, customizable styling, and a completion callback.
+Show a single random thought from a list while your app does startup work
+(checking connectivity, loading resources, warming caches). An animated
+`0%` to `100%` progress bar runs for a configurable duration, then a
+completion callback fires so you can move on to the next screen.
 
 ## Features
 
-- Display multiple daily thoughts sequentially.
-- Configure how long each thought is displayed.
-- Animated `0%` to `100%` progress for each thought.
-- Custom widget that moves with the progress bar.
+- Displays one random thought from the provided list.
+- Configurable display duration.
+- Animated `0%` to `100%` progress bar with a widget that moves along it.
 - Optional custom logo widget.
-- Customizable progress bar appearance.
-- Customizable thought and author text styles.
-- `onComplete` callback after the final thought.
+- Customizable progress bar appearance and thought/author text styles.
+- `onComplete` callback fired once when the duration elapses.
+- Injectable `Random` for deterministic tests.
 - Works as a normal composable Flutter widget.
 
 ## Installation
@@ -22,7 +24,7 @@ Add `daily_thought_loader` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  daily_thought_loader: ^0.0.1
+  daily_thought_loader: ^0.1.0
 ```
 
 Then run:
@@ -64,9 +66,14 @@ DailyThoughtLoader(
 )
 ```
 
-Each thought is displayed for the configured duration. The progress animation resets when the loader moves to the next thought.
+One thought is chosen at random from `thoughts` and shown for `duration`
+while the progress bar animates from `0%` to `100%`. When the duration
+elapses, `onComplete` is called once. The loader does not advance to
+another thought.
 
-After the final thought completes, `onComplete` is called once.
+A new random thought is chosen (and the animation restarts) if you pass a
+new `thoughts` list instance or a different `duration`. Pass a seeded
+`Random` to make the selection deterministic in tests.
 
 ## Custom Progress Widget
 
@@ -146,12 +153,13 @@ If a thought has no author, pass an empty string.
 
 | Property | Type | Description |
 |---|---|---|
-| `thoughts` | `List<DailyThought>` | Thoughts displayed in sequence. |
-| `duration` | `Duration` | Time each thought remains visible. |
+| `thoughts` | `List<DailyThought>` | Pool to pick from. One entry is chosen at random. If empty, nothing renders and `onComplete` is not called. |
+| `duration` | `Duration` | How long the chosen thought is shown before `onComplete`. |
 | `progressWidget` | `Widget` | Widget displayed above and moving with the progress bar. |
 | `logoWidget` | `Widget?` | Optional widget displayed below the progress section. |
 | `style` | `DailyThoughtLoaderStyle` | Visual styling configuration. |
-| `onComplete` | `VoidCallback?` | Called after the final thought completes. |
+| `onComplete` | `VoidCallback?` | Called once (post-frame) when the duration elapses. |
+| `random` | `Random?` | Random source for the pick. Defaults to `Random()`. |
 
 ### `DailyThoughtLoaderStyle`
 

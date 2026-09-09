@@ -1,19 +1,24 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../models/daily_thought.dart';
 import '../models/daily_thought_loader_style.dart';
 
-/// Displays a sequence of daily thoughts with a timed progress indicator.
+/// A splash-style loader that displays a single random thought while your
+/// app performs startup work (checking connectivity, loading resources, ...).
 ///
-/// Each thought is displayed for [duration]. When the duration completes,
-/// the loader advances to the next thought and resets the progress animation.
+/// One thought is chosen at random from [thoughts] and shown for [duration]
+/// with an animated `0%` to `100%` progress indicator. When the duration
+/// completes, [onComplete] is called exactly once. The loader never advances
+/// to another thought.
 ///
-/// After the final thought completes, [onComplete] is called once.
+/// A fresh random thought is chosen if [thoughts] (by identity) or [duration]
+/// changes, and the progress animation restarts.
 ///
 /// The [progressWidget] is positioned above the progress bar and moves
-/// horizontally with the progress value.
-///
-/// An optional [logoWidget] can be displayed below the progress section.
+/// horizontally with the progress value. An optional [logoWidget] can be
+/// displayed below the progress section.
 class DailyThoughtLoader extends StatefulWidget {
   /// Creates a daily thought loader.
   const DailyThoughtLoader({
@@ -27,17 +32,18 @@ class DailyThoughtLoader extends StatefulWidget {
     this.logoWidget,
     this.style = const DailyThoughtLoaderStyle(),
     this.onComplete,
+    this.random,
   });
 
-  /// The thoughts to display in sequence.
+  /// The pool of thoughts to choose from.
   ///
-  /// The list is treated as immutable by the loader. Provide a new list
-  /// when replacing the sequence of thoughts.
+  /// Exactly one entry is picked at random and displayed. Provide a new list
+  /// instance to trigger a fresh pick. If the list is empty, the loader
+  /// renders nothing and [onComplete] is not called.
   final List<DailyThought> thoughts;
 
-  /// The amount of time each thought remains visible.
-  ///
-  /// The same duration is used for every thought.
+  /// The amount of time the chosen thought remains visible before
+  /// [onComplete] is called.
   final Duration duration;
 
   /// The widget displayed above the progress bar.
@@ -51,8 +57,14 @@ class DailyThoughtLoader extends StatefulWidget {
   /// Controls the visual appearance of the loader.
   final DailyThoughtLoaderStyle style;
 
-  /// Called once after the final thought has completed.
+  /// Called exactly once when the progress animation completes.
   final VoidCallback? onComplete;
+
+  /// The random number generator used to pick a thought.
+  ///
+  /// Defaults to a new [Random] instance. Provide a seeded [Random] to make
+  /// the selection deterministic in tests.
+  final Random? random;
 
   @override
   State<DailyThoughtLoader> createState() => _DailyThoughtLoaderState();
@@ -61,13 +73,16 @@ class DailyThoughtLoader extends StatefulWidget {
 class _DailyThoughtLoaderState extends State<DailyThoughtLoader>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  late final Random _random;
 
-  int _currentThoughtIndex = 0;
+  DailyThought? _thought;
   bool _isCompleted = false;
 
   @override
   void initState() {
     super.initState();
+
+    _random = widget.random ?? Random();
 
     _controller = AnimationController(
       vsync: this,
@@ -76,9 +91,24 @@ class _DailyThoughtLoaderState extends State<DailyThoughtLoader>
 
     _controller.addStatusListener(_handleAnimationStatus);
 
-    if (widget.thoughts.isNotEmpty) {
-      _controller.forward();
+    _startWithRandomThought();
+  }
+
+  void _startWithRandomThought() {
+    if (widget.thoughts.isEmpty) {
+      _thought = null;
+      _isCompleted = false;
+      _controller.stop();
+      _controller.value = 0.0;
+      return;
     }
+
+    _thought = widget.thoughts[_random.nextInt(widget.thoughts.length)];
+    _isCompleted = false;
+
+    _controller
+      ..reset()
+      ..forward();
   }
 
   void _handleAnimationStatus(AnimationStatus status) {
@@ -86,39 +116,33 @@ class _DailyThoughtLoaderState extends State<DailyThoughtLoader>
       return;
     }
 
-    if (_currentThoughtIndex < widget.thoughts.length - 1) {
-      setState(() {
-        _currentThoughtIndex++;
-      });
+    _isCompleted = true;
 
-      _controller
-        ..reset()
-        ..forward();
-
+    final callback = widget.onComplete;
+    if (callback == null) {
       return;
     }
 
-    _isCompleted = true;
-    widget.onComplete?.call();
+    // Defer so callers can safely navigate without mutating the tree
+    // during the animation status phase.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        callback();
+      }
+    });
   }
 
   @override
   void didUpdateWidget(covariant DailyThoughtLoader oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.thoughts != widget.thoughts) {
-      if (widget.thoughts.isEmpty) {
-        _controller.stop();
-        _currentThoughtIndex = 0;
-        _isCompleted = false;
-      } else {
-        _currentThoughtIndex = 0;
-        _isCompleted = false;
+    if (oldWidget.duration != widget.duration) {
+      _controller.duration = widget.duration;
+    }
 
-        _controller
-          ..reset()
-          ..forward();
-      }
+    if (!identical(oldWidget.thoughts, widget.thoughts) ||
+        oldWidget.duration != widget.duration) {
+      setState(_startWithRandomThought);
     }
   }
 
@@ -133,11 +157,10 @@ class _DailyThoughtLoaderState extends State<DailyThoughtLoader>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.thoughts.isEmpty) {
+    final thought = _thought;
+    if (thought == null) {
       return const SizedBox.shrink();
     }
-
-    final thought = widget.thoughts[_currentThoughtIndex];
 
     return AnimatedBuilder(
       animation: _controller,
@@ -149,13 +172,15 @@ class _DailyThoughtLoaderState extends State<DailyThoughtLoader>
               thought.text,
               style: widget.style.thoughtTextStyle,
             ),
-            SizedBox(
-              height: widget.style.thoughtSpacing,
-            ),
-            Text(
-              thought.author,
-              style: widget.style.authorTextStyle,
-            ),
+            if (thought.author.isNotEmpty) ...[
+              SizedBox(
+                height: widget.style.thoughtSpacing,
+              ),
+              Text(
+                thought.author,
+                style: widget.style.authorTextStyle,
+              ),
+            ],
             SizedBox(
               height: widget.style.thoughtSpacing,
             ),

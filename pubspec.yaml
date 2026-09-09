@@ -1,6 +1,6 @@
 name: daily_thought_loader
-description: A customizable timed daily thought loading widget for Flutter.
-version: 0.0.1
+description: A splash-style Flutter loader that shows a random thought while your app loads, then fires a completion callback.
+version: 0.1.1
 repository: https://github.com/preetkewl/daily_thought_loader
 
 environment:
